@@ -88,7 +88,7 @@ gradlew pactPublish # publish the results back to the broker
 ```
 
 #### Junit 5
-The Junit 5 integration simply runs the pact verification as part of the normal test suite. So just run_
+The Junit 5 integration simply runs the pact verification as part of the normal test suite. So just run:
 ```shell script
 gradlew test
 ```
