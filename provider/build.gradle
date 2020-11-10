@@ -1,0 +1,107 @@
+plugins {
+    id 'application'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.10'
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "au.com.dius.pact" version "4.1.9"
+    id "com.wiredforcode.spawn" version "0.8.2"
+}
+group = 'mobi.waterdog'
+version = '1.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url 'https://dl.bintray.com/kotlin/ktor'
+    }
+    maven {
+        url 'https://dl.bintray.com/kotlin/kotlinx'
+    }
+}
+dependencies {
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.7.0"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+    implementation 'io.ktor:ktor-server-netty:1.4.0'
+    implementation 'io.ktor:ktor-html-builder:1.4.0'
+    implementation 'io.ktor:ktor-serialization:1.4.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1'
+    implementation 'au.com.dius.pact.provider:junit5:4.1.9'
+}
+
+task startProvider(type: SpawnProcessTask, dependsOn: 'shadowJar') {
+    println("Using java: ${JavaVersion.current()}")
+    println("running jar:")
+    println(shadowJar.archiveFile.get().asFile.path)
+    command "java -jar ${shadowJar.archiveFile.get().asFile.path}"
+    ready 'Started Application' // This is important, as it is the string the the plugin looks for in order to proceed
+}
+
+task terminateProvider(type: KillProcessTask)
+System.setProperty("pact.verifier.publishResults", "true");
+pact {
+    reports {
+        defaultReports()
+        json
+    }
+
+    broker{
+        pactBrokerUrl = 'http://localhost:9292'
+    }
+
+    serviceProviders {
+
+        // You can define as many as you need, but each must have a unique name
+        ClientsApi {
+            // All the provider properties are optional, and have sensible defaults (shown below)
+            //providerVersion = version
+            //providerTag = ["dev"]
+
+            startProviderTask = startProvider
+            terminateProviderTask = terminateProvider
+            requestFilter = { req ->
+                // For some reason even when the server is up and running I needed to introduce a bit of delay :S
+                Thread.sleep(50)
+            }
+            protocol = 'http'
+            host = 'localhost'
+            port = 8080
+            path = '/'
+
+            // Again, you can define as many consumers for each provider as you need, but each must have a unique name
+            /*hasPactWith('Frontend') {
+                // currently supports a file path using file() or a URL using url()
+                pactSource = url("http://localhost:9292/pacts/provider/ClientsService/consumer/Frontend/latest")
+
+            }*/
+            fromPactBroker {}
+        }
+    }
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
+}
+
+
+application {
+    mainClassName = 'mobi.waterdog.pact.example.ApplicationKt'
+}
+
+sourceSets {
+    main {
+        kotlin.srcDir "src/main/kotlin"
+        resources.srcDir "src/main/resources"
+    }
+    test {
+        kotlin.srcDir "src/test/kotlin"
+        resources.srcDir "src/test/resources"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
