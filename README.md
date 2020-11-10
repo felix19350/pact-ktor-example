@@ -25,15 +25,15 @@ break the consumer's expectations.
 This is an interesting tool because it allows developers to cover a broad range of scenarios that are traditionally covered
 by expensive integration tests requiring the presence of the consumer and producer at the same time.
 
-### Getting started
+## Getting started
 
-#### Requirements:
+### Requirements:
 * Docker
 * Docker compose
 * NPM
 * JDK 11 or above
 
-#### 1 - Start the broker:
+### 1 - Start the broker:
 In the `/broker` folder there is a compose file (for docker compose)  that allows you to launch an instance of the pact 
 broker, with the following command:
 
@@ -44,7 +44,7 @@ docker-compose -f pact-broker.yml up
 You can verify that the broker is up by opening the browser on [http://localhost:9292](http://localhost:9292)
 For further information please check the [pact broker documentation](https://docs.pact.io/pact_broker/)
 
-#### 2 - Run the consumer tests
+### 2 - Run the consumer tests
 The `/consumer` folder contains a sample javascript client, that will consume our API. The plain old jest tests in the 
 `/consumer/__test__/contract` folder exercise the actual calls to the API defined in `/consumer/src/consumer.js`.
 
@@ -73,21 +73,21 @@ After publishing the contract,
 
 The consumer is adapted from this [Test Automation University course](https://github.com/rafaelaazevedo/tau-pact-nodejs-course)
 
-#### 3 - Run the provider tests
+### 3 - Run the provider tests
 
 For the provider, we've implemented two different ways of running the pact verification: using the [gradle task](https://docs.pact.io/implementation_guides/jvm/provider/gradle/)
 and using the [junit 5 extension](https://docs.pact.io/implementation_guides/jvm/provider/junit5).
 
 In either case, the broker needs to be running in order for the provider to fetch the contract. 
 
-__Gradle__
+#### Gradle
 In order to run with gradle, you can use the following commands (in the provider folder):
 ```shell script
 gradlew pactVerify  # verify the contract
 gradlew pactPublish # publish the results back to the broker
 ```
 
-__Junit 5__
+#### Junit 5
 The Junit 5 integration simply runs the pact verification as part of the normal test suite. So just run_
 ```shell script
 gradlew test
