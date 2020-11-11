@@ -29,7 +29,7 @@ by expensive integration tests requiring the presence of the consumer and produc
 
 ## Usage
 
-### Requirements:
+### 0 - Requirements:
 * Docker
 * Docker compose
 * NPM
