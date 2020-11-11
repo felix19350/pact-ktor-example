@@ -1,4 +1,4 @@
-package mobi.waterdog.pact.example
+package com.example
 
 import io.ktor.application.call
 import io.ktor.html.respondHtml

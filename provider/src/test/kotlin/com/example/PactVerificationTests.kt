@@ -1,4 +1,4 @@
-package mobi.waterdog.pact.example
+package com.example
 
 import au.com.dius.pact.provider.junit5.HttpTestTarget
 import au.com.dius.pact.provider.junit5.PactVerificationContext
@@ -12,10 +12,12 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestTemplate
 import org.junit.jupiter.api.extension.ExtendWith
 
+@Tag("ContractTest")
 @Provider("ClientsApi")
 @PactBroker(host = "localhost", port = "9292", scheme = "http")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -28,6 +30,7 @@ class PactVerificationTests {
 
     @BeforeAll
     fun setupApp(){
+        System.setProperty("pact.verifier.publishResults", "true")
         sut = embeddedServer(Netty, port = 8080){
             main()
         }
@@ -53,6 +56,4 @@ class PactVerificationTests {
     fun pactVerificationTestTemplate(context: PactVerificationContext) {
         context.verifyInteraction()
     }
-
-
 }

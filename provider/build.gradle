@@ -2,8 +2,8 @@ plugins {
     id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.10'
-    id "com.github.johnrengelman.shadow" version "6.1.0"
     id "au.com.dius.pact" version "4.1.9"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
     id "com.wiredforcode.spawn" version "0.8.2"
 }
 group = 'mobi.waterdog'
@@ -33,37 +33,34 @@ dependencies {
 }
 
 task startProvider(type: SpawnProcessTask, dependsOn: 'shadowJar') {
-    println("Using java: ${JavaVersion.current()}")
-    println("running jar:")
-    println(shadowJar.archiveFile.get().asFile.path)
     command "java -jar ${shadowJar.archiveFile.get().asFile.path}"
     ready 'Started Application' // This is important, as it is the string the the plugin looks for in order to proceed
 }
 
 task terminateProvider(type: KillProcessTask)
-System.setProperty("pact.verifier.publishResults", "true");
+
+// Always publish the verification results.
+System.setProperty("pact.verifier.publishResults", "true")
 pact {
+    // Turn on reporting: https://github.com/pact-foundation/pact-jvm/tree/master/provider/gradle#verification-reports
     reports {
         defaultReports()
         json
     }
 
+    // Add the broker where the contracts are stored: https://github.com/pact-foundation/pact-jvm/tree/master/provider/gradle#verification-reports
     broker{
         pactBrokerUrl = 'http://localhost:9292'
     }
 
     serviceProviders {
-
-        // You can define as many as you need, but each must have a unique name
+        // The name of the provider needs to match what the client specified initially. See /consumer/__test__/helpers/pactSetup.js
         ClientsApi {
-            // All the provider properties are optional, and have sensible defaults (shown below)
-            //providerVersion = version
-            //providerTag = ["dev"]
-
+            // The provider needs to start and stop. "startProvider" and "terminateProvider" are gradle tasks
             startProviderTask = startProvider
             terminateProviderTask = terminateProvider
             requestFilter = { req ->
-                // For some reason even when the server is up and running I needed to introduce a bit of delay :S
+                // For some reason even when the server is up and running I needed to introduce a bit of delay :(
                 Thread.sleep(50)
             }
             protocol = 'http'
@@ -71,12 +68,7 @@ pact {
             port = 8080
             path = '/'
 
-            // Again, you can define as many consumers for each provider as you need, but each must have a unique name
-            /*hasPactWith('Frontend') {
-                // currently supports a file path using file() or a URL using url()
-                pactSource = url("http://localhost:9292/pacts/provider/ClientsService/consumer/Frontend/latest")
-
-            }*/
+            // Signal that the pacts will come from the pact broker.
             fromPactBroker {}
         }
     }
@@ -100,8 +92,4 @@ sourceSets {
         kotlin.srcDir "src/test/kotlin"
         resources.srcDir "src/test/resources"
     }
-}
-
-test {
-    useJUnitPlatform()
 }

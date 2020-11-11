@@ -1,4 +1,4 @@
-package mobi.waterdog.pact.example
+package com.example
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong

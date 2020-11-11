@@ -1,4 +1,4 @@
-package mobi.waterdog.pact.example
+package com.example
 
 import kotlinx.serialization.Serializable
 
